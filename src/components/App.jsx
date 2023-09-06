@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ContactsList } from './Contacts/Contacts';
 import { ContactForm } from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
 
-// начальное значение контактов
-const defaltState = [
+// начальное дефолтное значение контактов
+const defaultState = [
   { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
   { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
   { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
@@ -14,8 +14,20 @@ const defaltState = [
   { id: 'id-6', name: 'Clement Young', number: '344-01-46' },
 ];
 
+// функция добавления данных из LocalStorage в State
+const addDataToState = () => {
+  // получаем данные с LocalStorage
+  const localData = localStorage.getItem('contacts');
+  // если не null --> возвращает данные LocalStorage
+  if (localData !== null) {
+    return JSON.parse(localData);
+  }
+  // если null --> возвращается дефолтное значение
+  return defaultState;
+};
+
 export const App = () => {
-  const [contacts, setContacts] = useState(defaltState);
+  const [contacts, setContacts] = useState(addDataToState);
   const [filter, setFilter] = useState('');
 
   // добавляем новый контакт
@@ -33,17 +45,22 @@ export const App = () => {
     return setContacts(prevState => [...prevState, newContact]);
   };
 
-  // метод добавления фильтра - из компонента Filter возвращается значение инпута в value
+  // добавляем данные в LocalStorage
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  // функция добавления фильтра - из компонента Filter возвращается значение инпута в value
   const addFilter = value => setFilter(value);
 
-  // метод удаления контакта - из компонента ContactList возвращается id елемента.
+  // функция удаления контакта - из компонента ContactList возвращается id елемента.
   const deleteContact = id => {
     // фильтруем массив объектов по id -> возвращаем массив без объекта с таким id
     setContacts(prevState => prevState.filter(item => item.id !== id));
   };
 
-  // метод сброса списка контактов до дифолтного значения
-  const addDefaltState = () => setContacts(defaltState);
+  // функция сброса списка контактов до дефолтного значения
+  const addDefaltState = () => setContacts(defaultState);
 
   // создаем новый массив, отфильтрованный по значению filter, который передаем пропсом в компонент ContactsList
   const filteredList = contacts.filter(item =>
